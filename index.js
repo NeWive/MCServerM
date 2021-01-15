@@ -8,6 +8,7 @@ const Event = require('events');
 const TCPServer = require('./Script/TCPServer');
 const HTTPServer = require('./Script/HTTPServer');
 const CmdHandler = require('./Script/CmdHandler');
+const authority = require('./authority.config');
 
 /**
  * global descriptions
@@ -59,8 +60,13 @@ function initEventListenner() {
     /**
      * emitters: HTTPServer
      */
-    global.listener.on('execute-cmd', (d) => {
+    global.listener.on('execute-cmd', ({cmd, args, from}) => {
         // global.server.executeCmd(`/${d.cmd}`, [d.args]);
+        if(authority.indexOf(from) > -1) {
+
+        } else {
+            global.listener.emit('msg', { msg: 'unauthorized' });
+        }
     });
 }
 
