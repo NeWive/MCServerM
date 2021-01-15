@@ -22,3 +22,5 @@ server-icon.png
 server.jar
 whitelist.json
 usercache.json
+tcp.config.js
+authority.config.js
