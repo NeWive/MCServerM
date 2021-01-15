@@ -72,7 +72,9 @@ function getFileMD5(data) {
  */
 function writeFile(data, path) {
     return new Promise((res, rej) => {
-        // fs.writeFile(path, )
+        fs.writeFile(path, data, () => {
+            res();
+        });
     });
 }
 
@@ -81,5 +83,6 @@ module.exports = {
     readDirectory,
     resolveAbsolutePath,
     getFile,
-    getFileMD5
+    getFileMD5,
+    writeFile
 }
