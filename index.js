@@ -26,7 +26,7 @@ const CmdHandler = require('./Script/CmdHandler');
  * cmdHandler
  */
 function init() {
-    return new Promise((res, rej) => {
+    return new Promise(async (res, rej) => {
         try {
             for(let optionName in globalConfig) {
                 if (globalConfig.hasOwnProperty(optionName)) {
@@ -38,7 +38,7 @@ function init() {
             global.cmdHandler = new CmdHandler(
                 global.slotNumber
             );
-            global.cmdHandler.backup();
+            await global.cmdHandler.rollback(0);
             res();
         } catch(e) {
             Utils.outputLog([colors.red(e.message)]);

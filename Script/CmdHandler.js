@@ -3,6 +3,7 @@ const Utils = require('./Util');
 const colors = require('colors');
 const childProcess = require('child_process');
 const Status = require('./Status');
+const { result } = require('lodash');
 
 class CmdHandler {
     /**
@@ -36,13 +37,47 @@ class CmdHandler {
         return `7z a -t7z ${Utils.resolveAbsolutePath([global.backupDir, name])} @${Utils.resolveAbsolutePath(['backup_filelist.ini'])} -xr\!session.lock | grep size`;
     }
 
-    /**
-     * 
-     */
-    updateLogFile(name) {
+    
 
+    /**
+     * roll back entry
+     */
+    async rollback(slotIndex) {
+        if(slotIndex >= 0 && slotIndex < this.slotNumber) {
+            let result = await Utils.getFile(Utils.resolveAbsolutePath([global.backupDir, 'slots.json']));
+            console.log(result);
+            if(result.status === Status.OK) {
+                try {
+                    let logs = JSON.parse(result.data);
+                    if(slotIndex < logs.length) {
+                        let fileInfo = logs[slotIndex];
+                        let rmCmd = `rm ${Utils.resolveAbsolutePath(['world/'])} -rf`;
+                        this._print([rmCmd, 'deleting pre saves...'], 'rollback module');
+                        childProcess.execSync(rmCmd);
+                        let cmd = `7z x ${Utils.resolveAbsolutePath([global.backupDir ,fileInfo.name])} -o${global.projectDir} -y`;
+                        this._print([cmd, 'extracting backup saves...'], 'rollback module');
+                        childProcess.execSync(cmd);
+                        this._print(['extract saves complete'], 'rollback module');
+                        return { status: Status.OK };
+                    } else {
+                        this._print([colors.red('error slot index')], 'rollback module');
+                        return { status: Status.FAILED, code: -114514, msg: 'error slot index' };
+                    }
+                }  catch(e) {
+                    this._print([colors.red('JSON parse error')], 'rollback module');
+                    return { status: Status.FAILED, code: -114515, msg: 'JSON parse error' };
+                } 
+            }
+        } else {
+            this._print([colors.red('error slot index')], 'rollback module');
+            return { status: Status.FAILED, code: -114514, msg: 'error slot index' };
+        }
     }
 
+    /**
+     * 
+     * @param {*} uid 
+     */
     async backup(uid) {
         try {
             let obj = this._generateSlotName();
@@ -69,6 +104,7 @@ class CmdHandler {
                 } catch(e) {
                     this._print([e.message]);
                     this._print([colors.red('JSON parse error')], 'backup module');
+                    return { status: Status.FAILED, code: -114515, msg: 'JSON parse error' };
                 }
             } else {
                 return { status: Status.FAILED, code: result.code, msg: result.message }
