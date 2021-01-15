@@ -1,0 +1,84 @@
+const colors = require('colors');
+const globalConfig = require('./global.config');
+const Utils = require('./Script/Util');
+const Server = require("./Script/Server");
+const Stdin = require('readline');
+const Frp = require("./Script/Frp");
+const Event = require('events');
+const TCPServer = require('./Script/TCPServer');
+
+/**
+ * global descriptions
+ * projectDir: project root dir
+ * frpConfigDir
+ * serverMemoryAllocated
+ * toggleGui
+ * server: MC logic server
+ * serverTarget: jar file
+ * stdin
+ * backupDir
+ * frpClientDir
+ * frpClientTarget
+ * frp: Frp logic client
+ */
+function init() {
+    return new Promise((res, rej) => {
+        try {
+            for(let optionName in globalConfig) {
+                if (globalConfig.hasOwnProperty(optionName)) {
+                    global[optionName] = globalConfig[optionName];
+                }
+            }
+            global.projectDir = __dirname;
+            global.server = new Server(global.projectDir, global.serverTarget, global.serverMemoryAllocated, global.toggleGui);
+            res();
+        } catch(e) {
+            Utils.outputLog([colors.red(e.message)]);
+            rej();
+        }
+    });
+}
+
+function initEventListenner() {
+    const listener = new Event();
+    global.listener = listener;
+    global.listener.on('msg', (d) => {
+        global.server.executeCmd('/say', [d.msg]);
+    });
+}
+
+/**
+ * 开启服务器入口
+ * @returns {Promise<void>}
+ */
+async function start() {
+    // let toggleMC = await global.server.start();
+    let toggleMC = true; // for frp test
+    if (toggleMC) {
+        /**
+         * 开启Frp
+         */
+        global.frp = new Frp(
+            Utils.resolveAbsolutePath([global.frpConfigDir]),
+            Utils.resolveAbsolutePath([global.frpClientDir]),
+            global.frpClientTarget
+        );
+        let toggleFrp = await global.frp.start();
+        if(toggleFrp) {
+            initEventListenner();
+            global.tcpServer = new TCPServer(global.listener);
+            global.tcpServer.start();
+            global.stdin = Stdin.createInterface({
+                input: process.stdin,
+                output: process.stdout
+            });
+        }
+    }
+}
+
+/**
+ * 初始化入口
+ */
+init().then(start, () => {
+    Utils.outputLog(['Script failed to init, please check your configurations according to the error message']);
+});
