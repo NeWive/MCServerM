@@ -66,6 +66,16 @@ function getFileMD5(data) {
     return fsHash.digest('hex');
 }
 
+/**
+ * path: absolute path
+ * @param {*} data 
+ */
+function writeFile(data, path) {
+    return new Promise((res, rej) => {
+        // fs.writeFile(path, )
+    });
+}
+
 module.exports = {
     outputLog,
     readDirectory,
