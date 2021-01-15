@@ -1,10 +1,10 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const customCmd = require('../customCmd.config');
+const customCmd = require('../playerCmd.config');
 
 class HTTPServer {
     constructor() {
-        this.port = 8999;
+        this.port = 9000;
     }
 
     start() {

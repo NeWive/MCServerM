@@ -19,7 +19,7 @@ Entry
 All the functions are covered by Promise
 
 if the function finished successfully, it will return
-`{ status: Status.OK}`
+`{ status: Status.OK }`
 
 if data is needed, it will return 
 `{ status: Status.OK, data: data }`

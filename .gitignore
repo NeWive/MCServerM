@@ -8,6 +8,7 @@ logs/
 mods/
 node_modules/
 world/
+Backup/
 
 banned-ips.json
 banned-players.json

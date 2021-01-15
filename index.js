@@ -7,6 +7,7 @@ const Frp = require("./Script/Frp");
 const Event = require('events');
 const TCPServer = require('./Script/TCPServer');
 const HTTPServer = require('./Script/HTTPServer');
+const CmdHandler = require('./Script/CmdHandler');
 
 /**
  * global descriptions
@@ -21,6 +22,8 @@ const HTTPServer = require('./Script/HTTPServer');
  * frpClientDir
  * frpClientTarget
  * frp: Frp logic client
+ * slotNumber: slotNumber
+ * cmdHandler
  */
 function init() {
     return new Promise((res, rej) => {
@@ -32,6 +35,10 @@ function init() {
             }
             global.projectDir = __dirname;
             global.server = new Server(global.projectDir, global.serverTarget, global.serverMemoryAllocated, global.toggleGui);
+            global.cmdHandler = new CmdHandler(
+                global.slotNumber
+            );
+            global.cmdHandler.backup();
             res();
         } catch(e) {
             Utils.outputLog([colors.red(e.message)]);
@@ -43,11 +50,17 @@ function init() {
 function initEventListenner() {
     const listener = new Event();
     global.listener = listener;
+    /**
+     * emitters: TCPServer
+     */
     global.listener.on('msg', (d) => {
         global.server.executeCmd('/say', [d.msg]);
     });
+    /**
+     * emitters: HTTPServer
+     */
     global.listener.on('execute-cmd', (d) => {
-        global.server.executeCmd(`/${d.cmd}`, [d.args]);
+        // global.server.executeCmd(`/${d.cmd}`, [d.args]);
     });
 }
 
@@ -57,7 +70,7 @@ function initEventListenner() {
  */
 async function start() {
     // let toggleMC = await global.server.start();
-    let toggleMC = true; // for frp test
+    let toggleMC = false; // for frp test
     if (toggleMC) {
         /**
          * 开启Frp
@@ -74,10 +87,15 @@ async function start() {
             global.tcpServer.start();
             global.httpServer = new HTTPServer();
             global.httpServer.start();
-            
+
             global.stdin = Stdin.createInterface({
                 input: process.stdin,
                 output: process.stdout
+            });
+            global.stdin.on('line', (data) => {
+                if(/^\//.test(data)) {
+
+                }
             });
         }
     }
