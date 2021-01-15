@@ -6,6 +6,7 @@ const Stdin = require('readline');
 const Frp = require("./Script/Frp");
 const Event = require('events');
 const TCPServer = require('./Script/TCPServer');
+const HTTPServer = require('./Script/HTTPServer');
 
 /**
  * global descriptions
@@ -45,6 +46,9 @@ function initEventListenner() {
     global.listener.on('msg', (d) => {
         global.server.executeCmd('/say', [d.msg]);
     });
+    global.listener.on('execute-cmd', (d) => {
+        global.server.executeCmd(`/${d.cmd}`, [d.args]);
+    });
 }
 
 /**
@@ -68,6 +72,9 @@ async function start() {
             initEventListenner();
             global.tcpServer = new TCPServer(global.listener);
             global.tcpServer.start();
+            global.httpServer = new HTTPServer();
+            global.httpServer.start();
+            
             global.stdin = Stdin.createInterface({
                 input: process.stdin,
                 output: process.stdout
