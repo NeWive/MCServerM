@@ -37,7 +37,18 @@ class CmdHandler {
         return `7z a -t7z ${Utils.resolveAbsolutePath([global.backupDir, name])} @${Utils.resolveAbsolutePath(['backup_filelist.ini'])} -xr\!session.lock | grep size`;
     }
 
-    
+    async getSlotsInfo() {
+        let result = await Utils.getFile(Utils.resolveAbsolutePath([global.backupDir, 'slots.json']));
+        if(result.status === Status.OK) {
+            try {
+                let logs = JSON.parse(result.data);
+                return { status: Status.OK, data: logs };
+            } catch(e) {
+                this._print([colors.red('JSON parse error')], 'rollback module');
+                return { status: Status.FAILED, code: -114515, msg: 'JSON parse error' };
+            }
+        }
+    }
 
     /**
      * roll back entry
@@ -45,7 +56,6 @@ class CmdHandler {
     async rollback(slotIndex) {
         if(slotIndex >= 0 && slotIndex < this.slotNumber) {
             let result = await Utils.getFile(Utils.resolveAbsolutePath([global.backupDir, 'slots.json']));
-            console.log(result);
             if(result.status === Status.OK) {
                 try {
                     let logs = JSON.parse(result.data);

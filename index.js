@@ -38,7 +38,7 @@ function init() {
             global.cmdHandler = new CmdHandler(
                 global.slotNumber
             );
-            await global.cmdHandler.rollback(0);
+            console.log(await global.cmdHandler.getSlotsInfo());
             res();
         } catch(e) {
             Utils.outputLog([colors.red(e.message)]);
