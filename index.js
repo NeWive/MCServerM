@@ -11,6 +11,10 @@ const CmdHandler = require('./Script/CmdHandler');
 const authority = require('./authority.config');
 const serverCmd = require('./serverCmd.config');
 
+// TODO: listen to joint of new players
+// TODO: live update frp
+// TODO: restart frp
+
 /**
  * global descriptions
  * projectDir: project root dir
