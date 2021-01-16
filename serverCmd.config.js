@@ -1,1 +1,1 @@
-module.exports = ['backup', 'rollback', 'slot_list', 'update_frp', 'restart_frp']
+module.exports = ['backup', 'rollback', 'slot_list', 'update_frp', 'restart_frp', 'stop']

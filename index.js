@@ -117,6 +117,7 @@ async function start(manual = false) {
                 });
             }
         });
+        global.stdin.setPrompt('> 请输入');
     }
 }
 
@@ -191,6 +192,18 @@ async function cmdDispatcher(obj) {
             } else if(global.isRollingBack) {
                 global.server.executeCmd('/say', ['RollingBack is processing, please wait']);
             }
+        },
+        'stop': async () => {
+            _print(['waiting for closing of server ...'], 'EventDispatcher');
+            await new Promise((closeRes) => {
+                global.listener.once('server-close', () => {
+                    _print(['server closed ...'], 'EventDispatcher');
+                        closeRes();
+                });
+                global.server.executeCmd('/stop');
+            });     
+            await global.frp.shutdown(0);
+            process.exit();
         }
     }
     if(serverCmd.indexOf(obj.cmd) > -1 && cmdDispatch.hasOwnProperty(obj.cmd)) {

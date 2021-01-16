@@ -2,6 +2,7 @@ const Utils = require('./Util');
 const Status = require("./Status");
 const colors = require("colors");
 const childProcess = require("child_process");
+const util = require('util');
 const _ = require('lodash');
 
 class Frp {
@@ -169,6 +170,20 @@ class Frp {
             }
         } else {
             return false;
+        }
+    }
+
+    async shutdown(start) {
+        if(start < this.frpList.length) {
+            try {
+                let cmd = `kill ${this.frpList[start].process.pid}`;
+                this.print([cmd], this.frpList[start].name);
+                await util.promisify(childProcess.exec)(cmd);
+                await this.shutdown(start + 1);
+            } catch(e) {
+                this.print([e], this.frpList[start].name);                
+                await this.shutdown(start + 1);
+            }
         }
     }
 }
