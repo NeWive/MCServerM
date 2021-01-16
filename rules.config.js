@@ -7,5 +7,8 @@ module.exports = [
         rule: /Saved the game/,
         event: 'save-all-done'
     },
-    
+    {
+        rule: /joined the game/,
+        event: 'joint-player'
+    }
 ];

@@ -5,10 +5,10 @@
 存放Frp配置文件
 ### `Server/`
 Server.jar and other necessary assets
-### `Script/`
-Logic Code
-### `index.js`
-Entry
+### `Backup/`
+backup files
+### `Backup/slots.json`
+### `FrpClient/`
 
 ## Code Description
 ### Enums
@@ -55,5 +55,7 @@ module.exports = {
     DONE: 'xxx'
 }
 ```
-
-## 
+### `authority.config.js`
+```js
+module.exports = ['xxx'];
+```

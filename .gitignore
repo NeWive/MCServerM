@@ -24,3 +24,6 @@ whitelist.json
 usercache.json
 tcp.config.js
 authority.config.js
+dynmap/
+start.sh
+fabric-installer-0.6.1.51.jar

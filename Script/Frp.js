@@ -122,6 +122,7 @@ class Frp {
                  this.frpList[key].expired = true;
              }
         });
+        this.print(this.frpList, ['frpMain']);
     }
 
     /**
@@ -145,7 +146,9 @@ class Frp {
     async updateFrp() {
         if(!this.isUpdatingFrp) {
             this.isUpdatingFrp = true;
+            this.print(['checking frp ini files...'], 'frpMain');
             await this.updateFrpInfo();
+            this.print(['checking frp processes...'], 'frpMain');
             await this.updateFrpProcess(0);
             this.isUpdatingFrp = false;
         }

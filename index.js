@@ -10,6 +10,7 @@ const HTTPServer = require('./Script/HTTPServer');
 const CmdHandler = require('./Script/CmdHandler');
 const authority = require('./authority.config');
 const serverCmd = require('./serverCmd.config');
+const Status = require('./Script/Status');
 
 // TODO: listen to joint of new players
 // TODO: live update frp
@@ -30,6 +31,7 @@ const serverCmd = require('./serverCmd.config');
  * frp: Frp logic client
  * slotNumber: slotNumber
  * cmdHandler
+ * toggleAutoRestart
  * 
  * ServerStatus: isBackingUp
  */
@@ -50,6 +52,10 @@ function init() {
             // init Server Status
             global.isBackingUp = false;
             global.isRollingBack = false;
+            global.toggleAutoRestart = false;
+            global.manualShutdown = false;
+
+            global.startDate = new Date(global.start);
 
             res();
         } catch(e) {
@@ -74,10 +80,29 @@ function initEventListenner() {
     global.listener.on('execute-cmd', (obj) => {
         // obj: {cmd, args, from}
         // global.server.executeCmd(`/${d.cmd}`, [d.args]);
+	console.log(obj);
         if(authority.indexOf(obj.from) > -1) {
             cmdDispatcher(obj);
         } else {
             global.server.executeCmd('/say', ['unauthorized']);
+        }
+    });
+    /**
+     * emitters: new player
+     */
+    global.listener.on('joint-player', () => {
+        let days = new Date().getTime() - global.startDate;
+        let time = parseInt(days / (1000 * 60 * 60 * 24));
+        setTimeout(() => {
+            global.server.executeCmd('/say', [`Hi~ o(*￣▽￣*)ブ 欢迎来玩，我们已经开服 ${time} 天辣`]);
+        }, 3000);
+    });
+    /**
+     * toggle-auto-restart
+     */
+    global.listener.on('server-close', () => {
+        if(global.toggleAutoRestart && !global.isRollingBack && !global.manualShutdown) {
+            start(true);
         }
     });
 }
@@ -177,20 +202,18 @@ async function cmdDispatcher(obj) {
         },
         'rollback': async (obj) => {
             if(!global.isRollingBack && !global.isBackingUp) {
+                global.manualShutdown = true;
+                let previousToggleAutoRestart = global.toggleAutoRestart;
                 global.isRollingBack = true;
+                global.toggleAutoRestart = false;
                 _print(['waiting for closing of server ...'], 'EventDispatcher');
-                await new Promise((closeRes) => {
-                    global.listener.once('server-close', () => {
-                        _print(['server closed ...'], 'EventDispatcher');
-                        closeRes();
-                    });
-                    global.server.executeCmd('/stop');
-                });
                 _print(['starting to roll back ...'], 'EventDispatcher');
-                await global.cmdHandler.rollback(obj.args[0]);
+                let result = await global.cmdHandler.rollback(obj.args[0]);
                 _print(['roll back complete ...'], 'EventDispatcher');
                 global.isRollingBack = false;
-                start(true);
+                global.toggleAutoRestart = previousToggleAutoRestart;
+                global.manualShutdown = false;
+                result.status === Status.OK && start(true);
             } else if(global.isBackingUp) {
                 global.server.executeCmd('/say', ['BackingUp is processing, please wait']);
             } else if(global.isRollingBack) {
@@ -198,6 +221,7 @@ async function cmdDispatcher(obj) {
             }
         },
         'stop': async () => {
+            global.manualShutdown = true;
             _print(['waiting for closing of server ...'], 'EventDispatcher');
             await new Promise((closeRes) => {
                 global.listener.once('server-close', () => {
@@ -208,6 +232,14 @@ async function cmdDispatcher(obj) {
             });     
             await global.frp.shutdown(0);
             process.exit();
+        },
+        'toggle_auto_restart': async (obj) => {
+            global.toggleAutoRestart = obj.args[0] === 'true' ? true : false;
+            _print([`toggleAutoRestart: ${global.toggleAutoRestart}`], 'EventDispatcher');
+        },
+        'update_frp': async () => {
+            _print(['checking frp...'], 'EventDispatcher');
+            await global.frp.updateFrp();
         }
     }
     if(serverCmd.indexOf(obj.cmd) > -1 && cmdDispatch.hasOwnProperty(obj.cmd)) {
