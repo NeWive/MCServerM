@@ -83,14 +83,14 @@ class Frp {
                 this.print(['pid: ' + this.frpList[start].process.pid], this.frpList[start].name);
                 this.frpList[start].process.stdout.on('data', (data) => {
                     this.print([`stdout: ${data}`], this.frpList[start].name);
-                    if(!this.frpList[start].toggleStart) {
-                        this.frpList[start].toggleStart = true;
-                        resolve();
-                    }
                 });
                 this.frpList[start].process.stdout.on('error', (data) => {
                     this.print([`stdout: ${data}`], this.frpList[start].name);
                 });
+                if(!this.frpList[start].toggleStart) {
+                    this.frpList[start].toggleStart = true;
+                    resolve();
+                }
             });
             await this.frpStart(start + 1);
         }

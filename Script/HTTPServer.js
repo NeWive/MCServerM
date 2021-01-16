@@ -1,10 +1,18 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const customCmd = require('../playerCmd.config');
+const Utils = require('./Util');
+const colors = require('colors');
 
 class HTTPServer {
     constructor() {
         this.port = 9000;
+    }
+
+    _print(msgArr, source) {
+        msgArr.forEach(msg => {
+            Utils.outputLog([colors.green(`[${source}]: `) + msg]);
+        });
     }
 
     start() {
@@ -23,7 +31,7 @@ class HTTPServer {
             }
         });
         this.httpServ.listen(this.port, () => {
-            console.log(`http server is listening on port ${this.port}`)
+            this._print([`http server is listening on port ${this.port}`], 'HTTPServer');
         });
     }
 }

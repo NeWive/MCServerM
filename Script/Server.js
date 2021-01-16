@@ -3,6 +3,8 @@ const Status = require("./Status");
 const colors = require("colors");
 const childProcess = require("child_process");
 const pattern = require('../server.config');
+const rulesConfig = require('../rules.config');
+const _ = require('lodash');
 
 class Server {
     /**
@@ -41,7 +43,11 @@ class Server {
     }
 
     executeCmd(cmd, args = []) {
-        this.serverProcess && this.serverProcess.stdin.write(`${cmd} ${args.join(' ')}`);
+        let arg = '';
+        if(args.length > 0) {
+            arg = args.join(' ').toString();
+        }
+        args.length > 0 ? this.serverProcess.stdin.write(`${cmd} ${arg}\n`) : this.serverProcess.stdin.write(`${cmd}\n`);
     }
 
     print(msgArr) {
@@ -52,6 +58,12 @@ class Server {
 
     logFilter(log) {
         this.print([`${log}`]);
+        let target = _.findIndex(rulesConfig, (o) => {
+            return o.rule.test(log);
+        });
+        if(target > -1) {
+            global.listener.emit(rulesConfig[target].event);
+        }
     }
 
     start() {
@@ -75,6 +87,7 @@ class Server {
                 });
                 this.serverProcess.on('close', (code) => {
                     this.print([colors.green(`MC Server ends, code: ${code}`)]);
+                    global.listener.emit('server-close');
                 });
             } else {
                 this.print([colors.red('file check failed')]);

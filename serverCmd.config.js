@@ -1,3 +1,1 @@
-module.exports = {
-    cmdIndex: ['backup', 'rollback', 'slot_list', 'stop_timer']
-}
+module.exports = ['backup', 'rollback', 'slot_list', 'update_frp', 'restart_frp']

@@ -14,8 +14,10 @@ class TCPServer {
         this.salt = config.salt;
     }
 
-    outputLog (d) {
-        Utils.outputLog([colors.green('[TCPServer]: '), d])
+    outputLog(msgArr, source) {
+        msgArr.forEach(msg => {
+            Utils.outputLog([colors.green(`[${source}]: `) + msg]);
+        });
     }
 
     validateMsg (d, s) {
@@ -80,26 +82,25 @@ class TCPServer {
     start () {
         this.server = net.createServer();
         this.server.listen(this.port, () => {
-            this.outputLog(`tcp server is listening on ${this.port}`)
+            this.outputLog([`tcp server is listening on ${this.port}`], 'TCPServer')
         });
         this.server.on('connection', (socket) => {
-            this.outputLog(socket.address());
+            this.outputLog([socket.address()], 'TCPServer');
             this.socketList.push(socket);
             socket.write(JSON.stringify({
                 type: 'connection',
                 msg: 'connected'
             }));
             socket.on('close', () => {
-                this.outputLog('client disconneted!');
+                this.outputLog(['client disconneted!'], 'TCPServer');
                 this.socketList.splice(this.socketList.indexOf(socket), 1);
             });
             socket.on("error", (err) => {
-                this.outputLog('client error disconneted!');
+                this.outputLog(['client error disconneted!'], 'TCPServer');
                 this.socketList.splice(this.socketList.indexOf(socket), 1);
             });
             socket.on('data', (data) => {
                 try {
-                    console.log(data.toString());
                     data = JSON.parse(data.toString());
                     this.dealMsg(data, socket);
                 } catch(e) {
@@ -112,10 +113,10 @@ class TCPServer {
             });
         });
         this.server.on('close', () => {
-            this.outputLog('Server closed');
+            this.outputLog(['Server closed'], 'TCPServer');
         });
         this.server.on('error', (e) => {
-            this.outputLog('Server error' + e);
+            this.outputLog(['Server error' + e], 'TCPServer');
         })
     }
 }
