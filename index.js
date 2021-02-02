@@ -11,10 +11,10 @@ const CmdHandler = require('./Script/CmdHandler');
 const authority = require('./authority.config');
 const serverCmd = require('./serverCmd.config');
 const Status = require('./Script/Status');
+const DBHandler = require(('./Script/DBHandler'));
 
-// TODO: listen to joint of new players
-// TODO: live update frp
-// TODO: restart frp
+// TODO: cmd log
+// TODO: gugu_list
 
 /**
  * global descriptions
@@ -32,7 +32,7 @@ const Status = require('./Script/Status');
  * slotNumber: slotNumber
  * cmdHandler
  * toggleAutoRestart
- * 
+ *
  * ServerStatus: isBackingUp
  */
 function init() {
@@ -48,7 +48,7 @@ function init() {
             global.cmdHandler = new CmdHandler(
                 global.slotNumber
             );
-            
+
             // init Server Status
             global.isBackingUp = false;
             global.isRollingBack = false;
@@ -56,6 +56,9 @@ function init() {
             global.manualShutdown = false;
 
             global.startDate = new Date(global.start);
+
+            global.dbHandler = new DBHandler();
+            await global.dbHandler.init()
 
             res();
         } catch(e) {
@@ -152,7 +155,7 @@ async function start(manual = false) {
 
 /**
  * dispatch cmd
- * @param {} obj 
+ * @param {} obj
  */
 async function cmdDispatcher(obj) {
     let _print = (msgArr, source) => {
@@ -229,7 +232,7 @@ async function cmdDispatcher(obj) {
                         closeRes();
                 });
                 global.server.executeCmd('/stop');
-            });     
+            });
             await global.frp.shutdown(0);
             process.exit();
         },
@@ -256,6 +259,8 @@ async function cmdDispatcher(obj) {
         }
     }
     if(serverCmd.indexOf(obj.cmd) > -1 && cmdDispatch.hasOwnProperty(obj.cmd)) {
+        // log
+        await global.dbHandler.insert('command_log', {cmd: obj.cmd, timestamp: `${new Date().getTime()}`, executor: obj.from}, 'cmd');
         _print([`executing ${obj.cmd}...`], 'EventDispatcher');
         cmdDispatch[obj.cmd](obj);
     } else {
