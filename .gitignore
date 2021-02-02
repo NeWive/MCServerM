@@ -27,3 +27,6 @@ authority.config.js
 dynmap/
 start.sh
 fabric-installer-0.6.1.51.jar
+.idea/vcs.xml
+.idea/modules.xml
+.idea/
