@@ -11,10 +11,10 @@ const CmdHandler = require('./Script/CmdHandler');
 const authority = require('./authority.config');
 const serverCmd = require('./serverCmd.config');
 const Status = require('./Script/Status');
+const DBHandler = require('./Script/DBHandler');
 
-// TODO: listen to joint of new players
-// TODO: live update frp
-// TODO: restart frp
+// TODO: cmd log
+// TODO: gugu_list
 
 /**
  * global descriptions
@@ -32,7 +32,8 @@ const Status = require('./Script/Status');
  * slotNumber: slotNumber
  * cmdHandler
  * toggleAutoRestart
- * 
+ * DBHandler
+ *
  * ServerStatus: isBackingUp
  */
 function init() {
@@ -48,7 +49,7 @@ function init() {
             global.cmdHandler = new CmdHandler(
                 global.slotNumber
             );
-            
+
             // init Server Status
             global.isBackingUp = false;
             global.isRollingBack = false;
@@ -57,6 +58,7 @@ function init() {
 
             global.startDate = new Date(global.start);
 
+            global.dbHandler = new DBHandler();
             res();
         } catch(e) {
             Utils.outputLog([colors.red(e.message)]);
@@ -77,12 +79,12 @@ function initEventListenner() {
     /**
      * emitters: HTTPServer
      */
-    global.listener.on('execute-cmd', (obj) => {
+    global.listener.on('execute-cmd', async (obj) => {
         // obj: {cmd, args, from}
         // global.server.executeCmd(`/${d.cmd}`, [d.args]);
-	console.log(obj);
+	    console.log(obj);
         if(authority.indexOf(obj.from) > -1) {
-            cmdDispatcher(obj);
+            await cmdDispatcher(obj);
         } else {
             global.server.executeCmd('/say', ['unauthorized']);
         }
@@ -100,9 +102,9 @@ function initEventListenner() {
     /**
      * toggle-auto-restart
      */
-    global.listener.on('server-close', () => {
+    global.listener.on('server-close', async () => {
         if(global.toggleAutoRestart && !global.isRollingBack && !global.manualShutdown) {
-            start(true);
+            await start(true);
         }
     });
 }
@@ -147,12 +149,13 @@ async function start(manual = false) {
             }
         });
         global.stdin.setPrompt('> 请输入');
+        // await global.dbHandler.init();
     }
 }
 
 /**
  * dispatch cmd
- * @param {} obj 
+ * @param {} obj
  */
 async function cmdDispatcher(obj) {
     let _print = (msgArr, source) => {
@@ -229,7 +232,7 @@ async function cmdDispatcher(obj) {
                         closeRes();
                 });
                 global.server.executeCmd('/stop');
-            });     
+            });
             await global.frp.shutdown(0);
             process.exit();
         },
@@ -237,14 +240,32 @@ async function cmdDispatcher(obj) {
             global.toggleAutoRestart = obj.args[0] === 'true' ? true : false;
             _print([`toggleAutoRestart: ${global.toggleAutoRestart}`], 'EventDispatcher');
         },
-        'update_frp': async () => {
+        'frp_update': async () => {
             _print(['checking frp...'], 'EventDispatcher');
             await global.frp.updateFrp();
+        },
+        'kill_all_frp': async () => {
+            _print(['shutting down frp...'], 'EventDispatcher');
+            await global.frp.shutdown(0);
+        },
+        'display_frp_info': async () => {
+            await global.frp.displayFrpList();
+        },
+        'kill_frp': async (o) => {
+            await global.frp.shutdownSingle(o.args[0]);
+        },
+        'restart_frp': async () => {
+            await global.frp.restart();
+        },
+        'display_cmd_log': async (obj) => {
+            await global.dbHandler.show('command_log', obj.args[0]);
         }
     }
     if(serverCmd.indexOf(obj.cmd) > -1 && cmdDispatch.hasOwnProperty(obj.cmd)) {
+        // log
         _print([`executing ${obj.cmd}...`], 'EventDispatcher');
-        cmdDispatch[obj.cmd](obj);
+        await cmdDispatch[obj.cmd](obj);
+        // await global.dbHandler.insert('command_log', {cmd: obj.cmd, timestamp: `${new Date().getTime()}`, executor: obj.from}, 'cmd');
     } else {
         global.server.executeCmd(obj.cmd, obj.args);
     }

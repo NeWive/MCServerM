@@ -179,15 +179,33 @@ class Frp {
     async shutdown(start) {
         if(start < this.frpList.length) {
             try {
-                let cmd = `kill ${this.frpList[start].process.pid}`;
-                this.print([cmd], this.frpList[start].name);
-                await util.promisify(childProcess.exec)(cmd);
+                await this.shutdownSingle(start);
                 await this.shutdown(start + 1);
             } catch(e) {
                 this.print([e], this.frpList[start].name);                
                 await this.shutdown(start + 1);
             }
         }
+    }
+
+    async shutdownSingle(index) {
+        if(index < this.frpList.length && index > -1 && this.frpList[index].toggleStart) {
+            let cmd = `kill ${this.frpList[index].process.pid}`;
+            this.print([cmd], this.frpList[index].name);
+            await util.promisify(childProcess.exec)(cmd);
+            this.frpList[index].toggleStart  = false;
+        }
+    }
+
+    async displayFrpList() {
+        for(let e of this.frpList) {
+            this.print([`name: ${e.name}\npath: ${e.path}\npid: ${e.process.pid}\nstatus: ${e.toggleStart ? 'running' : 'killed'}\nindex: ${this.frpList.indexOf(e)}`], 'FrpControl');
+        }
+    }
+
+    async restart() {
+        await this.shutdown(0);
+        await this.start();
     }
 }
 
