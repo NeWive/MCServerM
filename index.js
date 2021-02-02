@@ -114,8 +114,8 @@ function initEventListenner() {
  * @returns {Promise<void>}
  */
 async function start(manual = false) {
-    // let toggleMC = await global.server.start();
-    let toggleMC = true; // for frp test
+    let toggleMC = await global.server.start();
+    // let toggleMC = true; // for frp test
     if (toggleMC && !manual) {
         /**
          * 开启Frp
@@ -149,7 +149,7 @@ async function start(manual = false) {
             }
         });
         global.stdin.setPrompt('> 请输入');
-        await global.dbHandler.init();
+        // await global.dbHandler.init();
     }
 }
 
@@ -265,7 +265,7 @@ async function cmdDispatcher(obj) {
         // log
         _print([`executing ${obj.cmd}...`], 'EventDispatcher');
         await cmdDispatch[obj.cmd](obj);
-        await global.dbHandler.insert('command_log', {cmd: obj.cmd, timestamp: `${new Date().getTime()}`, executor: obj.from}, 'cmd');
+        // await global.dbHandler.insert('command_log', {cmd: obj.cmd, timestamp: `${new Date().getTime()}`, executor: obj.from}, 'cmd');
     } else {
         global.server.executeCmd(obj.cmd, obj.args);
     }
