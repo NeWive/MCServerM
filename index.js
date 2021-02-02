@@ -11,7 +11,7 @@ const CmdHandler = require('./Script/CmdHandler');
 const authority = require('./authority.config');
 const serverCmd = require('./serverCmd.config');
 const Status = require('./Script/Status');
-const DBHandler = require(('./Script/DBHandler'));
+const DBHandler = require('./Script/DBHandler');
 
 // TODO: cmd log
 // TODO: gugu_list
@@ -32,6 +32,7 @@ const DBHandler = require(('./Script/DBHandler'));
  * slotNumber: slotNumber
  * cmdHandler
  * toggleAutoRestart
+ * DBHandler
  *
  * ServerStatus: isBackingUp
  */
@@ -58,8 +59,6 @@ function init() {
             global.startDate = new Date(global.start);
 
             global.dbHandler = new DBHandler();
-            await global.dbHandler.init()
-
             res();
         } catch(e) {
             Utils.outputLog([colors.red(e.message)]);
@@ -80,12 +79,12 @@ function initEventListenner() {
     /**
      * emitters: HTTPServer
      */
-    global.listener.on('execute-cmd', (obj) => {
+    global.listener.on('execute-cmd', async (obj) => {
         // obj: {cmd, args, from}
         // global.server.executeCmd(`/${d.cmd}`, [d.args]);
 	    console.log(obj);
         if(authority.indexOf(obj.from) > -1) {
-            cmdDispatcher(obj);
+            await cmdDispatcher(obj);
         } else {
             global.server.executeCmd('/say', ['unauthorized']);
         }
@@ -103,9 +102,9 @@ function initEventListenner() {
     /**
      * toggle-auto-restart
      */
-    global.listener.on('server-close', () => {
+    global.listener.on('server-close', async () => {
         if(global.toggleAutoRestart && !global.isRollingBack && !global.manualShutdown) {
-            start(true);
+            await start(true);
         }
     });
 }
@@ -150,6 +149,7 @@ async function start(manual = false) {
             }
         });
         global.stdin.setPrompt('> 请输入');
+        await global.dbHandler.init();
     }
 }
 
@@ -256,13 +256,16 @@ async function cmdDispatcher(obj) {
         },
         'restart_frp': async () => {
             await global.frp.restart();
+        },
+        'display_cmd_log': async (obj) => {
+            await global.dbHandler.show('command_log', obj.args[0]);
         }
     }
     if(serverCmd.indexOf(obj.cmd) > -1 && cmdDispatch.hasOwnProperty(obj.cmd)) {
         // log
-        await global.dbHandler.insert('command_log', {cmd: obj.cmd, timestamp: `${new Date().getTime()}`, executor: obj.from}, 'cmd');
         _print([`executing ${obj.cmd}...`], 'EventDispatcher');
-        cmdDispatch[obj.cmd](obj);
+        await cmdDispatch[obj.cmd](obj);
+        await global.dbHandler.insert('command_log', {cmd: obj.cmd, timestamp: `${new Date().getTime()}`, executor: obj.from}, 'cmd');
     } else {
         global.server.executeCmd(obj.cmd, obj.args);
     }

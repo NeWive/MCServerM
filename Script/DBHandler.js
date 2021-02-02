@@ -1,7 +1,9 @@
-const sqlite = require('sqlite3');
+const sqlite = require('sqlite3').verbose();
 const fs = require('fs');
 const util = require('util');
 const child_process = require('child_process');
+const Utils = require('./Util');
+const colors = require('colors');
 
 class DBHandler {
     async init() {
@@ -15,11 +17,17 @@ class DBHandler {
         }
     }
 
+    _print(msgArr, source) {
+        msgArr.forEach(msg => {
+            Utils.outputLog([colors.green(`[${source}]: `) + msg]);
+        });
+    }
+
     show(tableName, limit = 10) {
         let statement = `select * from ${tableName} order by timestamp desc limit ${limit}`;
         return new Promise((res) => {
             this.DB.all(statement, (err, rows) => {
-                res(rows);
+                console.log(rows);
             });
         });
     }
@@ -39,9 +47,8 @@ class DBHandler {
 
     insert(tableName, query, type) {
         return new Promise((res) => {
-            let q = this.__generateQuery(tableName, type)
+            let q = this.__generateQuery(tableName, type);
             console.log(query);
-            console.log(type);
             switch (type) {
                 case 'cmd': {
                     console.log(q);
@@ -60,5 +67,13 @@ class DBHandler {
         });
     }
 }
+
+// let dbHandler = new DBHandler();
+// dbHandler.init().then(async () => {
+//     await dbHandler.insert('command_log', {cmd: 'display_frp_info', timestamp: new Date().getTime().toString(), executor: 'NeWive'}, 'cmd')
+//     dbHandler.DB.all('select * from command_log', (err, arr) => {
+//         console.log(arr);
+//     });
+// });
 
 module.exports = DBHandler;
