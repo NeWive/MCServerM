@@ -80,7 +80,7 @@ function initEventListenner() {
     global.listener.on('execute-cmd', (obj) => {
         // obj: {cmd, args, from}
         // global.server.executeCmd(`/${d.cmd}`, [d.args]);
-	console.log(obj);
+	    console.log(obj);
         if(authority.indexOf(obj.from) > -1) {
             cmdDispatcher(obj);
         } else {
@@ -112,8 +112,8 @@ function initEventListenner() {
  * @returns {Promise<void>}
  */
 async function start(manual = false) {
-    let toggleMC = await global.server.start();
-    // let toggleMC = true; // for frp test
+    // let toggleMC = await global.server.start();
+    let toggleMC = true; // for frp test
     if (toggleMC && !manual) {
         /**
          * 开启Frp
@@ -237,9 +237,22 @@ async function cmdDispatcher(obj) {
             global.toggleAutoRestart = obj.args[0] === 'true' ? true : false;
             _print([`toggleAutoRestart: ${global.toggleAutoRestart}`], 'EventDispatcher');
         },
-        'update_frp': async () => {
+        'frp_update': async () => {
             _print(['checking frp...'], 'EventDispatcher');
             await global.frp.updateFrp();
+        },
+        'kill_all_frp': async () => {
+            _print(['shutting down frp...'], 'EventDispatcher');
+            await global.frp.shutdown(0);
+        },
+        'display_frp_info': async () => {
+            await global.frp.displayFrpList();
+        },
+        'kill_frp': async (o) => {
+            await global.frp.shutdownSingle(o.args[0]);
+        },
+        'restart_frp': async () => {
+            await global.frp.restart();
         }
     }
     if(serverCmd.indexOf(obj.cmd) > -1 && cmdDispatch.hasOwnProperty(obj.cmd)) {
