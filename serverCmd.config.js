@@ -8,5 +8,6 @@ module.exports = [
     'display_frp_info',
     'kill_frp',
     'restart_frp',
-    'display_cmd_log'
+    'display_cmd_log',
+    'gugu'
 ];

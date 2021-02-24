@@ -1,79 +1,95 @@
 const sqlite = require('sqlite3').verbose();
-const fs = require('fs');
-const util = require('util');
-const child_process = require('child_process');
-const Utils = require('./Util');
+const path = require('path');
 const colors = require('colors');
 
 class DBHandler {
-    async init() {
-        if(!fs.existsSync('./mcServer.db')) {
-            await (util.promisify(child_process.exec))('touch mcServer.db');
-            this.DB = new sqlite.Database('./mcServer.db');
-            this.DB.run('create table command_log (cmd TEXT, timestamp TEXT, executor TEXT);');
-            this.DB.run('create table gugu_list (projectName TEXT, timestamp TEXT, executor TEXT);');
-        } else {
-            this.DB = new sqlite.Database('./mcServer.db');
+    constructor() {
+        this.dbPath = path.resolve(global.projectDir, './DB/MCM.db')
+        this.tableEnum = {
+            GU_LIST: 'gu_list',
+            CMD_LOG: 'cmd_log'
         }
+        console.log(colors.red(this.dbPath));
     }
 
-    _print(msgArr, source) {
-        msgArr.forEach(msg => {
-            Utils.outputLog([colors.green(`[${source}]: `) + msg]);
+    async connectDB() {
+        await new Promise(res => {
+            this.db = new sqlite.Database(this.dbPath, (err) => {
+                err && console.log(err);
+                res();
+            });
+        });
+        console.log(colors.red('nmd open db successfully'));
+    }
+
+    async handleDBWithNoReturn(sql, options = []) {
+        return await new Promise((res) => {
+            this.db.serialize(() => {
+                this.db.run(sql, options, (err) => {
+                    err && console.log(err);
+                    res(err ? err : {
+                        code: 1
+                    })
+                });
+            })
         });
     }
 
-    show(tableName, limit = 10) {
-        let statement = `select * from ${tableName} order by timestamp desc limit ${limit}`;
-        return new Promise((res) => {
-            this.DB.all(statement, (err, rows) => {
-                console.log(rows);
+    async select(sql, options = []) {
+        return await new Promise(res => {
+            this.db.serialize(() => {
+                this.db.all(sql, options, (err, rows) => {
+                    err && console.log(err);
+                    res(err ? err : rows);
+                });
             });
         });
     }
 
-    __generateQuery(tableName, type) {
-        switch (type) {
-            case 'cmd': {
-                return `insert into ${tableName} values ($cmd, $timestamp, $executor)`;
-            }
-            case 'gugu': {
-                return `insert into ${tableName} values ($projectName, $timestamp, $executor)`;
-            }
-            default:
-                return '';
+    async addGuList({satellite_launcher, time, gu_name}) {
+        let stmt = `insert into ${this.tableEnum.GU_LIST} (gu_name, time, satellite_launcher, status) values ('${gu_name}', ${time}, '${satellite_launcher}', 0)`;
+        await this.handleDBWithNoReturn(stmt);
+    }
+
+    async selectGuList(options = null) {
+        if(!options) {
+            let stmt = `select * from ${this.tableEnum.GU_LIST} order by index_number desc limit 0, 20`;
+            return await this.select(stmt);
+        } else {
+            let stmt = `select * from ${this.tableEnum.GU_LIST} where index_number = ${options.index_number}`;
+            return await this.select(stmt);
         }
     }
 
-    insert(tableName, query, type) {
-        return new Promise((res) => {
-            let q = this.__generateQuery(tableName, type);
-            console.log(query);
-            switch (type) {
-                case 'cmd': {
-                    console.log(q);
-                    this.DB.run(q, {$cmd: query.cmd, $timestamp: query.timestamp, $executor: query.executor}, () => {
-                        res();
-                    });
-                } break;
-                case 'gugu': {
-                    this.DB.run(q, {$projectName: query.projectName, $timestamp: query.timestamp, $executor: query.executor}, () => {
-                        res();
-                    });
-                } break;
-                default:
-                    return '';
-            }
-        });
+    async completeSatellite({index}) {
+        let stmt = `update ${this.tableEnum.GU_LIST} set status = 1 where index_number = ?`;
+        await this.handleDBWithNoReturn(stmt, [index]);
+    }
+
+    async addCmdLog({cmd, executor, time}) {
+        let stmt = `insert into ${this.tableEnum.CMD_LOG} values (?, ?, ?)`;
+        await this.handleDBWithNoReturn(stmt, [cmd, executor, time]);
+    }
+
+    async selectCmdLog() {
+        let stmt = `select * from ${this.tableEnum.CMD_LOG} order by time desc`;
+        return await this.select(stmt);
+    }
+
+    async close() {
+        await new Promise(res => {
+            this.db.close(() => {
+                console.log(colors.red('db connection closed'));
+            });
+        })
     }
 }
 
-// let dbHandler = new DBHandler();
-// dbHandler.init().then(async () => {
-//     await dbHandler.insert('command_log', {cmd: 'display_frp_info', timestamp: new Date().getTime().toString(), executor: 'NeWive'}, 'cmd')
-//     dbHandler.DB.all('select * from command_log', (err, arr) => {
-//         console.log(arr);
-//     });
-// });
-
 module.exports = DBHandler;
+// async function init() {
+//     global.projectDir = '/home/newive/WebsotrmProject/MCServerManager/'
+//     let db = new DBHandler();
+//     await db.connectDB();
+//     console.log(await db.addGuList({satellite_launcher: 'y', time: new Date().getTime(), gu_name: 'ying'}))
+// }
+// init().then(() => {});
