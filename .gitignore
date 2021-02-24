@@ -24,7 +24,6 @@ server.jar
 whitelist.json
 usercache.json
 tcp.config.js
-authority.config.js
 start.sh
 fabric-installer-0.6.1.51.jar
 .idea/vcs.xml

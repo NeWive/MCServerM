@@ -8,7 +8,6 @@ const Event = require('events');
 const TCPServer = require('./Script/TCPServer');
 const HTTPServer = require('./Script/HTTPServer');
 const CmdHandler = require('./Script/CmdHandler');
-const authority = require('./authority.config');
 const serverCmd = require('./serverCmd.config');
 const Status = require('./Script/Status');
 const DBHandler = require('./Script/DBHandler');
@@ -39,6 +38,7 @@ const DBHandler = require('./Script/DBHandler');
 function init() {
     return new Promise(async (res, rej) => {
         try {
+            //
             for(let optionName in globalConfig) {
                 if (globalConfig.hasOwnProperty(optionName)) {
                     global[optionName] = globalConfig[optionName];
@@ -58,7 +58,7 @@ function init() {
 
             global.startDate = new Date(global.start);
 
-            global.dbHandler = new DBHandler();
+            global.dbHandler = null;
             res();
         } catch(e) {
             Utils.outputLog([colors.red(e.message)]);
@@ -82,12 +82,12 @@ function initEventListenner() {
     global.listener.on('execute-cmd', async (obj) => {
         // obj: {cmd, args, from}
         // global.server.executeCmd(`/${d.cmd}`, [d.args]);
-	    console.log(obj);
-        if(authority.indexOf(obj.from) > -1) {
-            await cmdDispatcher(obj);
-        } else {
-            global.server.executeCmd('/say', ['unauthorized']);
-        }
+        await cmdDispatcher(obj);
+        // if(authority.indexOf(obj.from) > -1) {
+        //     await cmdDispatcher(obj);
+        // } else {
+        //     global.server.executeCmd('/say', ['unauthorized']);
+        // }
     });
     /**
      * emitters: new player
@@ -131,6 +131,8 @@ async function start(manual = false) {
         global.tcpServer.start();
         global.httpServer = new HTTPServer();
         global.httpServer.start();
+        global.dbHandler = new DBHandler();
+        await global.dbHandler.connectDB();
 
         global.stdin = Stdin.createInterface({
             input: process.stdin,
@@ -234,6 +236,7 @@ async function cmdDispatcher(obj) {
                 global.server.executeCmd('/stop');
             });
             await global.frp.shutdown(0);
+            global.dbHandler.close();
             process.exit();
         },
         'toggle_auto_restart': async (obj) => {
@@ -257,13 +260,44 @@ async function cmdDispatcher(obj) {
         'restart_frp': async () => {
             await global.frp.restart();
         },
+        'gugu': async (obj) => {
+            let gugu_cmd_dispatcher = {
+                'add': async (obj) => {
+                    await this.dbHandler.addGuList({
+                        satellite_launcher: obj.from,
+                        time: new Date().getTime(),
+                        gu_name: obj.args[1]
+                    });
+                    global.server.executeCmd('/say', [`恭喜玩家 ${obj.from} 成功放飞一颗卫星`]);
+                },
+                'list': async () => {
+                    let result = (await this.dbHandler.selectGuList()).map((e) => {
+                        return `卫星编号: ${e.index_number}, 卫星发射者: ${e.satellite_launcher}, 卫星: ${e.gu_name}, 发射时间: ${new Date(e.time)}, ${e.status ? '成功返回着陆场' : '现已停止了思考'}`
+                    }).forEach((e) => {
+                        global.server.executeCmd('/say', [e]);
+                    });
+                },
+                'done': async (obj) => {
+                    let res = await this.dbHandler.selectGuList({index_number: Number(obj.args[1])});
+                    if(res.length > 0) {
+                        await this.dbHandler.completeSatellite({index: Number(obj.args[1])});
+                        global.server.executeCmd('/say', [`恭喜玩家 ${obj.from} 成功回收一颗卫星`]);
+                    } else {
+                        _print(['error index provided'], 'gugu_event_dispatcher');
+                    }
+                }
+            };
+            await gugu_cmd_dispatcher[obj.args[0]](obj);
+        },
         'display_cmd_log': async (obj) => {
-            await global.dbHandler.show('command_log', obj.args[0]);
+            let result = (await this.dbHandler.selectCmdLog());
+            console.log(result);
         }
     }
     if(serverCmd.indexOf(obj.cmd) > -1 && cmdDispatch.hasOwnProperty(obj.cmd)) {
         // log
         _print([`executing ${obj.cmd}...`], 'EventDispatcher');
+        global.dbHandler.addCmdLog({cmd: obj.cmd, executor: obj.from, time: new Date().getTime()});
         await cmdDispatch[obj.cmd](obj);
         // await global.dbHandler.insert('command_log', {cmd: obj.cmd, timestamp: `${new Date().getTime()}`, executor: obj.from}, 'cmd');
     } else {

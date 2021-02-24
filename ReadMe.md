@@ -55,7 +55,3 @@ module.exports = {
     DONE: 'xxx'
 }
 ```
-### `authority.config.js`
-```js
-module.exports = ['xxx'];
-```
