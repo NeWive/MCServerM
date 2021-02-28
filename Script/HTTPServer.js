@@ -21,6 +21,7 @@ class HTTPServer {
         this.httpServ.post('/', (req, res) => {
             let data = req.body;
             let result = customCmd.indexOf(data.cmd);
+            console.log(data.cmd);
             if (result > -1) {
                 global.listener.emit('execute-cmd', { cmd: data.cmd, args: data.args, from: data.from });
                 res.header("content-type", "application/json");

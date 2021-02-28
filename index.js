@@ -160,6 +160,7 @@ async function start(manual = false) {
  * @param {} obj
  */
 async function cmdDispatcher(obj) {
+    console.log(obj);
     let _print = (msgArr, source) => {
         msgArr.forEach(msg => {
             Utils.outputLog([colors.green(`[${source}]: `) + msg]);
