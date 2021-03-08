@@ -21,6 +21,7 @@ LICENSE
 ops.json
 server-icon.png
 server.jar
+server.properties
 whitelist.json
 usercache.json
 tcp.config.js
