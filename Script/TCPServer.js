@@ -2,7 +2,6 @@ const net = require('net');
 const crypto = require('crypto');
 const Utils = require('./Util');
 const colors = require('colors');
-const config = require('../tcp.config');
 
 class TCPServer {
     constructor(listener) {
@@ -11,7 +10,7 @@ class TCPServer {
         this.port = 8999;
         this.socketList = [];
         this.keys = ['msg'];
-        this.salt = config.salt;
+        this.salt = global.salt;
     }
 
     outputLog(msgArr, source) {

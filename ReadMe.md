@@ -28,7 +28,7 @@ if failed, it'll return
 `{ status: Status.FAILED, code: ErrCode.Code, message: msg }`
 
 ## Configs
-### `global.config.js`
+### `global.config.json`
 ```js
 // example
 module.exports = {

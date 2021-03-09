@@ -22,6 +22,20 @@ class DBHandler {
         console.log(colors.red('nmd open db successfully'));
     }
 
+    async initDB() {
+        return await new Promise((res) => {
+            this.db.serialize(() => {
+                let initCmdLogSql = `CREATE TABLE cmd_log (cmd CHAR NOT NULL, executor CHAR, time BIGINT);`
+                let initGuListSql = `CREATE TABLE gu_list (gu_name CHAR NOT NULL, time BIGINT, satellite_launcher CHAR, status INTEGER, index_number INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE);`
+                this.db.run(initCmdLogSql, () => {
+                    this.db.run(initGuListSql, () => {
+                        res(1);
+                    });
+                });
+            });
+        });
+    }
+
     async handleDBWithNoReturn(sql, options = []) {
         return await new Promise((res) => {
             this.db.serialize(() => {
@@ -29,7 +43,7 @@ class DBHandler {
                     err && console.log(err);
                     res(err ? err : {
                         code: 1
-                    })
+                    });
                 });
             })
         });
@@ -86,10 +100,3 @@ class DBHandler {
 }
 
 module.exports = DBHandler;
-// async function init() {
-//     global.projectDir = '/home/newive/WebsotrmProject/MCServerManager/'
-//     let db = new DBHandler();
-//     await db.connectDB();
-//     console.log(await db.addGuList({satellite_launcher: 'y', time: new Date().getTime(), gu_name: 'ying'}))
-// }
-// init().then(() => {});

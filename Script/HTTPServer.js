@@ -1,6 +1,5 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const customCmd = require('../playerCmd.config');
 const Utils = require('./Util');
 const colors = require('colors');
 
@@ -20,7 +19,7 @@ class HTTPServer {
         this.httpServ.use(bodyParser.json());
         this.httpServ.post('/', (req, res) => {
             let data = req.body;
-            let result = customCmd.indexOf(data.cmd);
+            let result = global.playerCmd.indexOf(data.cmd);
             if (result > -1) {
                 global.listener.emit('execute-cmd', { cmd: data.cmd, args: data.args, from: data.from });
                 res.header("content-type", "application/json");
