@@ -2,8 +2,6 @@ const Utils = require('./Util');
 const Status = require("./Status");
 const colors = require("colors");
 const childProcess = require("child_process");
-const pattern = require('../server.config');
-const rulesConfig = require('../rules.config');
 const _ = require('lodash');
 
 class Server {
@@ -13,7 +11,7 @@ class Server {
      * @param serverMemoryAllocated
      * @param toggleGui
      */
-    constructor(rootDir = '', targetJar = '', serverMemoryAllocated = '', toggleGui = false) {
+    constructor(rootDir = '', targetJar = '', serverMemoryAllocated = '', toggleGui = false, outputStd = true) {
         this.rootDir = rootDir;
         this.targetJar = targetJar;
         this.serverMemoryAllocated = serverMemoryAllocated;
@@ -21,6 +19,7 @@ class Server {
         this.serverProcess = null;
         this.toggleOn = false;
         this.execArgs = ['-jar', `-Xms${this.serverMemoryAllocated}`, `-Xmx${this.serverMemoryAllocated}`, this.targetJar, !this.toggleGui ? 'nogui' : ''];
+        this.outputStd = outputStd;
     }
 
     /**
@@ -57,12 +56,12 @@ class Server {
     }
 
     logFilter(log) {
-        this.print([`${log}`]);
-        let target = _.findIndex(rulesConfig, (o) => {
-            return o.rule.test(log);
+        this.outputStd && this.print([`${log}`]);
+        let target = _.findIndex(global.rules, (o) => {
+            return new RegExp(o.rule).test(log);
         });
         if(target > -1) {
-            global.listener.emit(rulesConfig[target].event);
+            global.listener.emit(global.rules[target].event);
         }
     }
 
@@ -70,12 +69,12 @@ class Server {
         return new Promise(async (resolve, reject) => {
             let toggleOn = await this.check();
             if (toggleOn) {
-                this.print(['file check successfully', 'MC Server is going to start']);
+                this.outputStd && this.print(['file check successfully', 'MC Server is going to start']);
                 this.serverProcess = childProcess.spawn('java',this.execArgs);
-                this.print([`pid: ${this.serverProcess.pid}`])
+                this.outputStd && this.print([`pid: ${this.serverProcess.pid}`])
                 this.serverProcess.stdout.on('data', (data) => {
                     if(!this.toggleOn) {
-                        if(pattern.DONE.test(data)) {
+                        if(new RegExp(global.serverStatusRules.DONE).test(data)) {
                             this.toggleOn = true;
                             resolve(true);
                         }
@@ -84,10 +83,14 @@ class Server {
                 });
                 this.serverProcess.stderr.on('data', (data) => {
                     this.print([`${data}`]);
+                    if(/Program will exit/.test(data)) {
+                        global.listener.emit('server-close', 0);
+                        resolve(false);
+                    }
                 });
                 this.serverProcess.on('close', (code) => {
                     this.print([colors.green(`MC Server ends, code: ${code}`)]);
-                    global.listener.emit('server-close');
+                    resolve(false);
                 });
             } else {
                 this.print([colors.red('file check failed')]);

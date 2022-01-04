@@ -1,0 +1,52 @@
+{
+    "frpConfigDir": "FrpConfiguration/",
+    "serverMemoryAllocated": "6g",
+    "toggleGui": false,
+    "serverTarget": "fabric-server-launch.jar",
+    "backupDir": "Backup/",
+    "frpClientDir": "FrpClient/",
+    "frpClientTarget": "frpc",
+    "slotNumber": 4,
+    "start": "2020-6-23",
+    "useTcp": false,
+    "useFrp": false,
+    "useDB": false,
+    "salt": "",
+    "rules": [
+        {
+            "rule": "Automatic saving is now disabled",
+            "event": "save-off-done"
+        },
+        {
+            "rule": "Saved the game",
+            "event": "save-all-done"
+        },
+        {
+            "rule": "joined the game",
+            "event": "joint-player"
+        }
+    ],
+    "playerCmd": [
+        "backup", "rollback", "stop_timer", "slot_list", "gugu"
+    ],
+    "serverStatusRules": {
+        "DONE": "Done",
+        "EXIT": "Program will exit"
+    },
+    "serverCmd": [
+        "backup",
+        "rollback",
+        "slot_list",
+        "stop",
+        "toggle_auto_restart",
+        "kill_all_frp",
+        "display_frp_info",
+        "kill_frp",
+        "restart_frp",
+        "display_cmd_log",
+        "gugu"
+    ],
+    "defaultPackUpFiles": [
+        "banned-ips.json", "banned-players.json", "eula.txt", "ops.json", "server.properties", "whitelist.json", "usercache.json"
+    ]
+}
