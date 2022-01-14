@@ -1,13 +1,12 @@
 import {checkExists, mkdir} from "./FileHandler";
 import cmdHandler from "./CommandlineHandler";
 import globalConfig from "./Config";
+import config from "./Config";
 import {ConfigType} from "./interface";
 import path from "path";
-import config from "./Config";
 import DBHandler from "./DBHandler";
-import downloader from "./Downloader";
-import commandlineHandler from "./CommandlineHandler";
-import Server from "./Server";
+import backupManager from "./BackupManager";
+import ServerManager from "./ServerManager";
 
 function * ite(len: number) {
     for (let i = 0; i < len; i++) {
@@ -52,11 +51,16 @@ class Initializer {
         await config.readConfig();
         await Initializer.checkProjectDir();
         await DBHandler.init();
+    }
+
+    static async test() {
         // downloader.init(config.fabricGameURL, config.fabricLoaderURL, config.fabricInstallerURL);
-        let serverName = await commandlineHandler.getServerName();
+        // let serverName = await commandlineHandler.getServerName();
         // await downloader.getFabricServer(serverName);
-        let server = new Server(globalConfig.serverConfig.serverTarget, path.resolve(globalConfig.dir.Versions, serverName));
-        await server.start();
+        // let server = new Server(globalConfig.serverConfig.serverTarget, path.resolve(globalConfig.dir.Versions, serverName));
+        // await server.start();
+        // await backupManager.compress("kksk", "测试", "NeWive");
+        await backupManager.decompress("kksk", "E:\\MyProject\\MCSM\\Backup\\kksk_1642175467.zip")
     }
 }
 

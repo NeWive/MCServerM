@@ -26,3 +26,15 @@ export function removeDir(path: string, recursive: boolean = false) {
         recursive
     });
 }
+
+export function readdir(path: string) {
+    return util.promisify(fs.readdir)(path);
+}
+
+export function isDir(path: string): Promise<boolean> {
+    return new Promise((res) => {
+        fs.stat(path, (err, stat) => {
+            res(stat.isDirectory());
+        });
+    });
+}

@@ -2,6 +2,7 @@ import Initializer from "./Module/Initializer";
 
 async function main() {
     await Initializer.init();
+    await Initializer.test();
 }
 
 main().then(() => {

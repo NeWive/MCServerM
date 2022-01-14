@@ -15,7 +15,8 @@
     "xms": "2g",
     "xmx": "2g",
     "toggleGUI": false,
-    "serverTarget": "server.jar"
+    "serverTarget": "server.jar",
+    "saveDir": "world"
   },
   "backup_config": {
     "slotNumber": 4,
