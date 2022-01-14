@@ -166,8 +166,8 @@ async function cmdDispatcher(obj) {
                     await new Promise((res) => {
                         _print(['waiting for save-off...'], 'EventDispatcher');
                         global.listener.once('save-off-done', () => {
-                        //Automatic saving is now disabled
-                           res();
+                            //Automatic saving is now disabled
+                            res();
                         });
                         global.server.executeCmd('/save-off');
                     }).then(() => {
@@ -224,7 +224,7 @@ async function cmdDispatcher(obj) {
             await new Promise((closeRes) => {
                 global.listener.once('server-close', () => {
                     _print(['server closed ...'], 'EventDispatcher');
-                        closeRes();
+                    closeRes();
                 });
                 global.server.executeCmd('/stop');
             });

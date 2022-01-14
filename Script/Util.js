@@ -68,7 +68,7 @@ function getFileMD5(data) {
 
 /**
  * path: absolute path
- * @param {*} data 
+ * @param {*} data
  */
 function writeFile(data, path) {
     return new Promise((res, rej) => {

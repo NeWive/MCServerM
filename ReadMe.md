@@ -21,10 +21,10 @@ All the functions are covered by Promise
 if the function finished successfully, it will return
 `{ status: Status.OK }`
 
-if data is needed, it will return 
+if data is needed, it will return
 `{ status: Status.OK, data: data }`
 
-if failed, it'll return 
+if failed, it'll return
 `{ status: Status.FAILED, code: ErrCode.Code, message: msg }`
 
 ## Configs

@@ -118,9 +118,9 @@ class Frp {
         });
         // 删除已经过期的frp配置
         _(flag).forEach((v, key) => {
-             if(!v) {
-                 this.frpList[key].expired = true;
-             }
+            if(!v) {
+                this.frpList[key].expired = true;
+            }
         });
         this.print(this.frpList, ['frpMain']);
     }
@@ -182,7 +182,7 @@ class Frp {
                 await this.shutdownSingle(start);
                 await this.shutdown(start + 1);
             } catch(e) {
-                this.print([e], this.frpList[start].name);                
+                this.print([e], this.frpList[start].name);
                 await this.shutdown(start + 1);
             }
         }

@@ -18,7 +18,7 @@ class Server {
         this.toggleGui = toggleGui;
         this.serverProcess = null;
         this.toggleOn = false;
-        this.execArgs = ['-jar', `-Xms${this.serverMemoryAllocated}`, `-Xmx${this.serverMemoryAllocated}`, this.targetJar, !this.toggleGui ? 'nogui' : ''];
+        this.execArgs = ['-Dfile.encoding=utf-8', '-jar', `-Xms${this.serverMemoryAllocated}`, `-Xmx${this.serverMemoryAllocated}`, this.targetJar, !this.toggleGui ? 'nogui' : ''];
         this.outputStd = outputStd;
     }
 
