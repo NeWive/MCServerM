@@ -1,0 +1,10 @@
+node_modules/
+Backup/
+DB/
+Cache/
+Versions/
+
+LICENSE
+.idea/vcs.xml
+.idea/modules.xml
+.idea/

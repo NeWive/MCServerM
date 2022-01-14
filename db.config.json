@@ -1,0 +1,70 @@
+{
+  "DBTarget": "MCServerManager.db",
+  "tables": [
+    {
+      "tName": "cmd_log",
+      "columns": [
+        {
+          "cName": "cmd",
+          "cDataType": "CHAR",
+          "attributes": ["NOT NULL"]
+        },
+        {
+          "cName": "executor",
+          "cDataType": "CHAR",
+          "attributes": ["NOT NULL"]
+        },
+        {
+          "cName": "time",
+          "cDataType": "BIGINT",
+          "attributes": ["NOT NULL"]
+        }
+      ]
+    },
+    {
+      "tName": "gu_list",
+      "columns": [
+        {
+          "cName": "gu_name",
+          "cDataType": "CHAR",
+          "attributes": ["NOT NULL"]
+        },
+        {
+          "cName": "time",
+          "cDataType": "BIGINT",
+          "attributes": ["NOT NULL"]
+        },
+        {
+          "cName": "satellite_launcher",
+          "cDataType": "CHAR",
+          "attributes": ["NOT NULL"]
+        },
+        {
+          "cName": "status",
+          "cDataType": "INTEGER",
+          "attributes": ["NOT NULL"]
+        },
+        {
+          "cName": "index_number",
+          "cDataType": "INTEGER",
+          "attributes": ["PRIMARY KEY", "AUTOINCREMENT", "UNIQUE"]
+        }
+      ]
+    },
+    {
+      "tName": "server_list",
+      "columns": [
+        {
+          "cName": "server_name",
+          "cDataType": "CHAR",
+          "attributes": ["NOT NULL"]
+        },
+        {
+          "cName": "dir",
+          "cDataType": "CHAR",
+          "attributes": ["NOT NULL"]
+        }
+      ]
+    }
+  ]
+}
