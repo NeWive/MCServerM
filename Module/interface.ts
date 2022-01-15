@@ -74,3 +74,39 @@ export namespace DBHandlerType {
         name: string;
     }
 }
+
+export namespace MCServerType {
+    export enum Commands {
+        SAY = "/say",
+        SAVE_OFF = "/save-off",
+        SAVE_ALL = "/save-all",
+        SAVE_ON = "/save-on",
+        STOP = "/stop"
+    }
+}
+
+export namespace MCServerManagerType {
+    export interface CmdType {
+        cmd: string;
+        args: Array<string>;
+        from: string;
+    }
+
+    export interface CmdDispatcher {
+        [i: string]: (args: CmdType) => void;
+    }
+
+    export interface Satellite {
+        [i: string]: string;
+    }
+}
+
+export namespace BackupManagerType {
+    export interface BackupLogType {
+        serverName: string;
+        tips: string;
+        executor: string;
+        archiveName: string;
+        time: number;
+    }
+}

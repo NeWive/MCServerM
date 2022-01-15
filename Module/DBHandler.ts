@@ -7,7 +7,7 @@ import {DBHandlerType} from "./interface";
 
 class DBHandler {
     private _rootDir: string = globalConfig.projectDir;
-    private _service!: Database;
+    public _service!: Database;
     private _dbConfig!: DBHandlerType.DBConfig;
     private _targetDir: string = "";
 

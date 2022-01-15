@@ -8,9 +8,11 @@ class Config {
     public fabricLoaderURL: string = "";
     public fabricInstallerURL: string = "";
     public userAgent: string = "";
+    public startDate: string = "";
     public serverConfig: ConfigType.ServerConfig = {};
     public dir!: ConfigType.dir;
     public backupConfig!: ConfigType.BackupConfig
+    public serverCmd: Array<string> = [];
 
     async readConfig() {
         try {
@@ -26,6 +28,8 @@ class Config {
             this.dir = data.dir;
             this.serverConfig = data.server_config;
             this.backupConfig = data.backup_config;
+            this.startDate = data.start_date;
+            this.serverCmd = data.server_cmd;
         } catch (e) {
             throw e;
         }

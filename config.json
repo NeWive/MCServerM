@@ -23,5 +23,7 @@
     "backupFiles": [
       "banned-ips.json", "banned-players.json", "eula.txt", "ops.json", "server.properties", "whitelist.json", "usercache.json"
     ]
-  }
+  },
+  "start_date": "Sat Jan 15 2022 00:05:42 GMT+0800 (中国标准时间)",
+  "server_cmd": ["backup", "rollback", "stop_timer", "slot_list", "gugu", "stop"]
 }

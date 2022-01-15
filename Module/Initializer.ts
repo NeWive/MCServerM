@@ -60,7 +60,13 @@ class Initializer {
         // let server = new Server(globalConfig.serverConfig.serverTarget, path.resolve(globalConfig.dir.Versions, serverName));
         // await server.start();
         // await backupManager.compress("kksk", "测试", "NeWive");
-        await backupManager.decompress("kksk", "E:\\MyProject\\MCSM\\Backup\\kksk_1642175467.zip")
+        // await backupManager.decompress("kksk", "E:\\MyProject\\MCSM\\Backup\\kksk_1642175467.zip")
+        try {
+            let serverManager = new ServerManager("kksk");
+            await serverManager.run();
+        } catch (e) {
+            console.log(e);
+        }
     }
 }
 

@@ -1,7 +1,7 @@
 import DBHandler from "./DBHandler";
 
 class DBManager {
-    async addGuList(satelliteLauncher: string, time: number, guName: string) {
+    static async addGuList(satelliteLauncher: string, time: number, guName: string) {
         try {
             await DBHandler.insertSingle(
                 "gu_list",
@@ -13,7 +13,7 @@ class DBManager {
         }
     }
 
-    async selectGuList(indexNumber: number = -1) {
+    static async selectGuList(indexNumber: number = -1) {
         try {
             return await DBHandler.select(
                 ["gu_list"],
@@ -27,7 +27,7 @@ class DBManager {
         }
     }
 
-    async completeSatellite(index: number) {
+    static async completeSatellite(index: number) {
         try {
             await DBHandler.update(
                 "gu_list",
@@ -47,7 +47,7 @@ class DBManager {
         }
     }
 
-    async addCmdLog(cmd: string, executor: string, time: number) {
+    static async addCmdLog(cmd: string, executor: string, time: number) {
         try {
             await DBHandler.insertSingle(
                 "cmd_log",
@@ -64,7 +64,7 @@ class DBManager {
         }
     }
 
-    async addServerInfo(serverName: string) {
+    static async addServerInfo(serverName: string) {
         try {
             await DBHandler.insertSingle(
                 "server_list",
@@ -81,7 +81,7 @@ class DBManager {
         }
     }
 
-    async selectCmdLog() {
+    static async selectCmdLog() {
         try {
             return await DBHandler.select(
                 ["cmd_log"],

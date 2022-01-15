@@ -4,21 +4,14 @@ import {checkExists, readFile, writeFile, removeFile, readdir, isDir} from "./Fi
 import archiver from "archiver";
 import fs from "fs";
 import unzip from "extract-zip";
+import {BackupManagerType} from "./interface";
 
 /**
  * 遇到困难摆大烂
  */
 
-interface BackupLogType {
-    serverName: string;
-    tips: string;
-    executor: string;
-    archiveName: string;
-    time: number;
-}
-
 class BackupManager {
-    generateSlotName(serverName: string) {
+    static generateSlotName(serverName: string) {
         let time = new Date().getTime() / 1000;
         return {
             name: `${serverName}_${Math.floor(time)}.zip`,
@@ -26,17 +19,17 @@ class BackupManager {
         };
     }
 
-    async getSlotsInfo(serverName: string) {
+    static async getSlotsInfo(serverName: string) {
         try {
             let result = await readFile(path.resolve(globalConfig.projectDir, globalConfig.dir.BACKUP, `${serverName}.json`));
-            return JSON.parse(result.toString());
+            return <Array<BackupManagerType.BackupLogType>>JSON.parse(result.toString());
         } catch (e) {
             console.log(e);
             console.log("获取SlotInfo失败");
         }
     }
 
-    compress(serverName: string, tips: string, executor: string): Promise<void> {
+    static compress(serverName: string, tips: string, executor: string): Promise<void> {
         return new Promise(async (res) => {
             try {
                 let {name, time} = this.generateSlotName(serverName);
@@ -79,7 +72,7 @@ class BackupManager {
                     if (result[i]) {
                         archive.directory(target, globalConfig.serverConfig.saveDir + "/" + f);
                     } else {
-                        archive.append(target, {
+                        archive.append(fs.createReadStream(target), {
                             name: globalConfig.serverConfig.saveDir + "/" + f
                         });
                     }
@@ -104,7 +97,7 @@ class BackupManager {
         });
     }
 
-    async handleLogFile(serverName: string, tips: string, executor: string, archiveName: string, time: number): Promise<Array<BackupLogType>> {
+    static async handleLogFile(serverName: string, tips: string, executor: string, archiveName: string, time: number): Promise<Array<BackupManagerType.BackupLogType>> {
         let logPath = path.resolve(globalConfig.projectDir, globalConfig.dir.BACKUP, `${serverName}.json`);
         let nLog = {
             serverName,
@@ -115,7 +108,7 @@ class BackupManager {
         }
         try {
             await checkExists(logPath);
-            let data = <Array<BackupLogType>>JSON.parse((await readFile(logPath)).toString());
+            let data = <Array<BackupManagerType.BackupLogType>>JSON.parse((await readFile(logPath)).toString());
             data.push(nLog);
             if (data.length > globalConfig.backupConfig.slotNumber) {
                 data.sort((a, b) => (a.time - b.time));
@@ -133,9 +126,12 @@ class BackupManager {
         }
     }
 
-    async decompress(serverName: string, zipDir: string) {
+    static async decompress(serverName: string, zipIndex: number) {
         try {
+            let logPath = path.resolve(globalConfig.projectDir, globalConfig.dir.BACKUP, `${serverName}.json`);
+            let data = <Array<BackupManagerType.BackupLogType>>JSON.parse((await readFile(logPath)).toString());
             const dir = path.resolve(globalConfig.projectDir, globalConfig.dir.Versions, serverName);
+            const zipDir = path.resolve(globalConfig.projectDir, globalConfig.dir.BACKUP, data[zipIndex].archiveName);
             await unzip(zipDir, {
                 dir: dir
             });
@@ -145,6 +141,4 @@ class BackupManager {
     }
 }
 
-const backupManager = new BackupManager();
-
-export default backupManager;
+export default BackupManager;
