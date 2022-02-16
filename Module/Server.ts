@@ -68,16 +68,25 @@ class Server extends EventEmitter{
     testRun() {
         return new Promise((res, rej) => {
             try {
+                this._server = spawn(
+                    this._cmd,
+                    this._args,
+                    {
+                        cwd: this._serverSavePath
+                    }
+                );
                 let isSuccessful = false;
                 this._server.stdout.on("data", (message) => {
                     let log = message.toString();
                     console.log(log);
                     if (!isSuccessful && pattern[PatternType.PatternAttr.TEST_RUN_SUCCESS].test(log)) {
-                        isSuccessful = true
+                        isSuccessful = true;
+                        res(isSuccessful);
                     }
                 });
                 this._server.stderr.on("data", (message) => {
                     console.log(message);
+                    rej(message);
                 });
                 this._server.on("close", (message) => {
                     console.log(`MinecraftServer exited, code: ${message}`);

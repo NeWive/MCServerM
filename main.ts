@@ -10,5 +10,5 @@ main().then(() => {
     // let question = commandlineHandler.getListQuestion("test", "测试", test, 5);
     // let questionPrompt = commandlineHandler.quiz([question]);
 }, (err) => {
-    console.log(err.message);
+    console.log(err);
 });

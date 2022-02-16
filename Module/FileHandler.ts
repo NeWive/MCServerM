@@ -1,5 +1,6 @@
 import fs from "fs";
 import util from "util";
+import axios, {AxiosRequestHeaders} from "axios";
 
 export function readFile(path: string, option: Object = {}) {
     return util.promisify(fs.readFile)(path, option);
@@ -36,5 +37,35 @@ export function isDir(path: string): Promise<boolean> {
         fs.stat(path, (err, stat) => {
             res(stat.isDirectory());
         });
+    });
+}
+
+export function downloadAssets(url: string, savePath: string, headers: AxiosRequestHeaders) {
+    return new Promise(async (res, rej) => {
+        try {
+            const response = await axios.get(url, {
+                responseType: "stream",
+                headers,
+                timeout: 20000
+            });
+            try {
+                const writer = fs.createWriteStream(savePath);
+                writer.on("finish", () => {
+                    writer.close();
+                    res(true);
+                });
+                writer.on("error", (err) => {
+                    console.error("写入过程出现错误");
+                    rej(err);
+                });
+                response.data.pipe(writer);
+            } catch (e) {
+                console.error("写入初始化错误");
+                rej(e);
+            }
+        } catch (e) {
+            console.error("请求错误");
+            rej(e);
+        }
     });
 }

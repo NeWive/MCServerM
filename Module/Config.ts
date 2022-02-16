@@ -1,13 +1,15 @@
 import {readFile} from "./FileHandler";
 import path from "path";
 import {ConfigType} from "./interface";
+import {AxiosRequestHeaders} from "axios";
 
 class Config {
     public projectDir: string = path.resolve(__dirname, "../");
     public fabricGameURL: string = "";
     public fabricLoaderURL: string = "";
     public fabricInstallerURL: string = "";
-    public userAgent: string = "";
+    public fabricAPISourceURL: string = "";
+    public headers!: Array<AxiosRequestHeaders>;
     public startDate: string = "";
     public serverConfig: ConfigType.ServerConfig = {};
     public dir!: ConfigType.dir;
@@ -24,7 +26,8 @@ class Config {
             this.fabricGameURL = data.fabric.game;
             this.fabricLoaderURL = data.fabric.loader;
             this.fabricInstallerURL = data.fabric.installer;
-            this.userAgent = data.user_agent;
+            this.fabricAPISourceURL = data.fabric.fabricAPISource;
+            this.headers = data.headers;
             this.dir = data.dir;
             this.serverConfig = data.server_config;
             this.backupConfig = data.backup_config;

@@ -7,6 +7,7 @@ import path from "path";
 import DBHandler from "./DBHandler";
 import backupManager from "./BackupManager";
 import ServerManager from "./ServerManager";
+import downloader from "./Downloader";
 
 function * ite(len: number) {
     for (let i = 0; i < len; i++) {
@@ -52,21 +53,25 @@ class Initializer {
         await Initializer.checkProjectDir();
         await DBHandler.init();
     }
-
-    static async test() {
-        // downloader.init(config.fabricGameURL, config.fabricLoaderURL, config.fabricInstallerURL);
-        // let serverName = await commandlineHandler.getServerName();
-        // await downloader.getFabricServer(serverName);
-        // let server = new Server(globalConfig.serverConfig.serverTarget, path.resolve(globalConfig.dir.Versions, serverName));
-        // await server.start();
-        // await backupManager.compress("kksk", "测试", "NeWive");
-        // await backupManager.decompress("kksk", "E:\\MyProject\\MCSM\\Backup\\kksk_1642175467.zip")
+    static async testGetFabricServer() {
+        await downloader.requestFabricInfo();
+        console.log(downloader._fabricInstallerList);
+        console.log(downloader._fabricLoaderList);
+        console.log(downloader._fabricGameList);
+        console.log(downloader._fabricAPIVersions);
+        await downloader.getFabricServer("test", "1.18", "0.13.1", "0.10.2", "0.46.4+1.18");
+    }
+    static async testServerManager() {
         try {
-            let serverManager = new ServerManager("kksk");
+            let serverManager = new ServerManager("test");
             await serverManager.run();
         } catch (e) {
             console.log(e);
         }
+    }
+
+    static async test() {
+
     }
 }
 

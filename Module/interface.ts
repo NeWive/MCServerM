@@ -1,4 +1,6 @@
 export namespace DownloaderType {
+    export type FabricAPIVersions = Map<string, Array<string>>;
+
     export interface ListResponseSel extends ListSel{
         stable: boolean;
     }
@@ -11,6 +13,7 @@ export namespace DownloaderType {
         game: string;
         loader: string;
         installer: string;
+        fabricAPI: string;
     }
 }
 
