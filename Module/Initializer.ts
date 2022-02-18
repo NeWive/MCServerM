@@ -5,7 +5,6 @@ import config from "./Config";
 import {ConfigType} from "./interface";
 import path from "path";
 import DBHandler from "./DBHandler";
-import backupManager from "./BackupManager";
 import ServerManager from "./ServerManager";
 import downloader from "./Downloader";
 
@@ -59,19 +58,7 @@ class Initializer {
         console.log(downloader._fabricLoaderList);
         console.log(downloader._fabricGameList);
         console.log(downloader._fabricAPIVersions);
-        await downloader.getFabricServer("test", "1.18", "0.13.1", "0.10.2", "0.46.4+1.18");
-    }
-    static async testServerManager() {
-        try {
-            let serverManager = new ServerManager("test");
-            await serverManager.run();
-        } catch (e) {
-            console.log(e);
-        }
-    }
-
-    static async test() {
-
+        await downloader.getFabricServer("test1", "1.18.1", "0.13.1", "0.10.2", "0.46.4+1.18");
     }
 }
 

@@ -113,3 +113,22 @@ export namespace BackupManagerType {
         time: number;
     }
 }
+
+export namespace CmdHandlerType {
+    export enum choiceName {
+        ADD_A_SERVER = "ADD",
+        RUN_A_SERVER = "RUN",
+        FABRIC = "FABRIC",
+        VANILLA = "VANILLA",
+        EXIT = "EXIT",
+        ENTRY = "ENTRY"
+    }
+}
+
+export namespace DBManagerType {
+    export interface ServerInfo {
+        server_name: string;
+        dir: string;
+        target: string;
+    }
+}

@@ -9,6 +9,7 @@ class Config {
     public fabricLoaderURL: string = "";
     public fabricInstallerURL: string = "";
     public fabricAPISourceURL: string = "";
+    public pureServerURL: string = "";
     public headers!: Array<AxiosRequestHeaders>;
     public startDate: string = "";
     public serverConfig: ConfigType.ServerConfig = {};
@@ -27,6 +28,7 @@ class Config {
             this.fabricLoaderURL = data.fabric.loader;
             this.fabricInstallerURL = data.fabric.installer;
             this.fabricAPISourceURL = data.fabric.fabricAPISource;
+            this.pureServerURL = data.fabric.pureServer;
             this.headers = data.headers;
             this.dir = data.dir;
             this.serverConfig = data.server_config;

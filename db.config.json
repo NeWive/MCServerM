@@ -63,6 +63,11 @@
           "cName": "dir",
           "cDataType": "CHAR",
           "attributes": ["NOT NULL"]
+        },
+        {
+          "cName": "target",
+          "cDataType": "CHAR",
+          "attributes": ["NOT NULL"]
         }
       ]
     }

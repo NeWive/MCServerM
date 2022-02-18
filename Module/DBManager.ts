@@ -1,4 +1,5 @@
 import DBHandler from "./DBHandler";
+import {DBManagerType} from "./interface";
 
 class DBManager {
     static async addGuList(satelliteLauncher: string, time: number, guName: string) {
@@ -8,8 +9,8 @@ class DBManager {
                 ["gu_name", "time", "satellite_launcher", "status"],
                 [guName, time, satelliteLauncher, 0]);
         } catch (e) {
-            console.log(e);
             console.log("插入失败");
+            throw e;
         }
     }
 
@@ -22,8 +23,8 @@ class DBManager {
                 true
             );
         } catch (e) {
-            console.log(e);
             console.log("查找失败");
+            throw e;
         }
     }
 
@@ -42,8 +43,8 @@ class DBManager {
                 ]
             )
         } catch (e) {
-            console.log(e);
             console.log("更新表失败");
+            throw e;
         }
     }
 
@@ -59,25 +60,25 @@ class DBManager {
                 ]
             )
         } catch (e) {
-            console.log(e);
             console.log("记录命令日志失败");
+            throw e;
         }
     }
 
-    static async addServerInfo(serverName: string) {
+    static async addServerInfo(serverName: string, target: string = "server.jar") {
         try {
             await DBHandler.insertSingle(
                 "server_list",
                 [
-                    "server_name", "dir"
+                    "server_name", "dir", "target"
                 ],
                 [
-                    serverName, serverName
+                    serverName, serverName, target
                 ]
             )
         } catch (e) {
-            console.log(e);
             console.log("记录服务器信息失败");
+            throw e;
         }
     }
 
@@ -90,8 +91,35 @@ class DBManager {
                 true
             );
         } catch (e) {
-            console.log(e);
             console.log("查询日志失败");
+            throw e;
+        }
+    }
+
+    static async selectSingleServerInfo(serverN: string): Promise<Array<DBManagerType.ServerInfo>> {
+        try {
+            return await DBHandler.select(
+                ["server_list"],
+                ["*"],
+                [`server_name=${serverN}`]
+            );
+        } catch (e) {
+            console.log("查询服务器信息失败");
+            throw e;
+        }
+    }
+
+    static async selectAllServerInfo(): Promise<Array<DBManagerType.ServerInfo>> {
+        try {
+            return await DBHandler.select(
+                ["server_list"],
+                ["*"],
+                [],
+                true
+            );
+        } catch (e) {
+            console.log("查询服务器信息失败");
+            throw e;
         }
     }
 }

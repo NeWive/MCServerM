@@ -17,6 +17,10 @@ class DBHandler {
         });
     }
 
+    private _isEmpty(err: Error): boolean {
+        return /no such column/.test(err.message);
+    }
+
     private async _getDBConfig() {
         try {
             const data = (await readFile(path.resolve(this._rootDir, "db.config.json"))).toString();
@@ -236,8 +240,12 @@ class DBHandler {
                     res(stmt.get());
                 }
             } catch (e) {
-                console.log("查找失败");
-                rej(e);
+                if (this._isEmpty(<Error>e)) {
+                    res([]);
+                } else {
+                    console.log("查找失败");
+                    rej(e);
+                }
             }
         });
     }

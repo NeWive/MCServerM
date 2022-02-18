@@ -20,9 +20,9 @@ class ServerManager {
     public stdin: readline.Interface;
     public cmdHandler: MCServerManagerType.CmdDispatcher = {};
 
-    constructor(serverName: string) {
+    constructor(serverName: string, serverPath: string, serverTarget: string = globalConfig.serverConfig.serverTarget) {
         this.serverName = serverName;
-        this.server = new Server(globalConfig.serverConfig.serverTarget, path.resolve(globalConfig.dir.Versions, serverName));
+        this.server = new Server(serverTarget, path.resolve(globalConfig.dir.Versions, serverPath));
         this.stdin = readline.createInterface({
             input: process.stdin,
             output: process.stdout,
@@ -36,8 +36,8 @@ class ServerManager {
             }, 3000);
         });
 
-        this.server.on(eventNameEnum.SERVER_CLOSE, async () => {
-            if (this.manualShutdown) {
+        this.server.on(eventNameEnum.SERVER_CLOSE, async (flag: boolean = false) => {
+            if (this.manualShutdown || flag) {
                 this.stdin.close();
                 console.log("stdin 关闭");
                 DBHandler._service.close();
@@ -97,7 +97,7 @@ class ServerManager {
                         await BackupManager.decompress(this.serverName, slotIndex);
                         console.log("roll back complete ...")
                         this.isRollingBack = false;
-                        // await this.run(true);
+                        await this.run(true);
                     });
                     this.server.executeCommand(MCServerType.Commands.STOP);
                 } else {
@@ -147,7 +147,7 @@ class ServerManager {
         }
     }
 
-    async cmdDispatcher(obj: MCServerManagerType.CmdType) {
+    private async cmdDispatcher(obj: MCServerManagerType.CmdType) {
         if(globalConfig.serverCmd.indexOf(obj.cmd) > -1 && this.cmdHandler.hasOwnProperty(obj.cmd)) {
             console.log(`executing ${obj.cmd}...`);
             await DBManager.addCmdLog(obj.cmd, obj.from, new Date().getTime());
@@ -157,7 +157,7 @@ class ServerManager {
         }
     }
 
-    async run(manual: boolean = false) {
+    public async run(manual: boolean = false) {
         let isMCServerOn = await this.server.start();
         if (isMCServerOn && !manual) {
             this.stdin.on("line", (d) => {
