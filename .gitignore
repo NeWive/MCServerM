@@ -14,7 +14,8 @@ Versions/
 DB/
 Cache/
 
-
+Module/*.js
+Scripts/*.js
 banned-ips.json
 banned-players.json
 eula.txt
@@ -31,6 +32,7 @@ usercache.json
 tcp.config.js
 start.sh
 fabric-installer-0.6.1.51.jar
+*.js
 .idea/vcs.xml
 .idea/modules.xml
 .idea/
